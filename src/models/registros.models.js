@@ -104,7 +104,6 @@ export async function getRegistroById(id) {
 
 export async function editRegistro(register_id, { data, solds20, solds15, digitais, sobras }) {
   try {
-    console.log(data);
     await database.query(
       "UPDATE registros SET data=$2, vendas_20=$3, vendas_15=$4, digitais=$5, sobras=$6 WHERE register_id=$1",
       [register_id, data, solds20, solds15, digitais, sobras]
