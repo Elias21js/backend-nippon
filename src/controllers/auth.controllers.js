@@ -1,4 +1,4 @@
-import { getPasswordOfUser, registerUser, userExists } from "../models/auth.models.js";
+import { getUserPassword, registerUser, updateUserPassword, userExists } from "../models/auth.models.js";
 import { userSchema } from "../schemas/user.schema.js";
 import jwt from "jsonwebtoken";
 import bcrypt from "bcrypt";
@@ -13,7 +13,7 @@ export async function authRegister(req, res) {
     const { exists } = await userExists(name);
     if (exists) return res.status(400).json({ error: "userAlreadyExists", message: "Este nome já foi usado." });
 
-    const codedPassword = await bcrypt.hash(password, 10);
+    const codedPassword = await bcrypt.hash(password, 8);
 
     await registerUser({ name, password: codedPassword });
 
@@ -25,16 +25,23 @@ export async function authRegister(req, res) {
 
 export async function authLogin(req, res) {
   const { name, password: plainPassword } = req.body;
+  const DESIRED_COST = 8;
+
   if (!name && !plainPassword)
     return res
       .status(400)
       .send({ error: "insufficientInformations", message: "Informações insuficientes, nome e senha são necessários." });
 
-  const { exists } = await userExists(name);
-  if (!exists) return res.status(400).json({ error: "userDoesntExists", message: "Usuário não existe." });
-
-  const { password: decodedPassword } = await getPasswordOfUser(name);
+  const { password: decodedPassword } = await getUserPassword(name);
+  if (!decodedPassword) return res.status(400).json({ error: "userDoesntExists", message: "Usuário não existe." });
   const correct = await bcrypt.compare(plainPassword, decodedPassword);
+
+  const currentCost = parseInt(decodedPassword.split("$")[2]);
+  if (currentCost > DESIRED_COST) {
+    console.log(`🔄 Atualizando senha de ${name} para cost ${DESIRED_COST}...`);
+    const newHash = await bcrypt.hash(plainPassword, DESIRED_COST);
+    await updateUserPassword(name, newHash);
+  }
 
   if (!correct) return res.status(400).json({ error: "incorrectPassword", message: "Senha incorreta." });
 
