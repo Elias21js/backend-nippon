@@ -46,8 +46,8 @@ export async function authLogin(req, res) {
 
   res.cookie("token", token, {
     httpOnly: true, // protege contra XSS
-    secure: false,
-    sameSite: "strict", // reduz CSRF
+    secure: true, // porque no Render é HTTPS, tem que ser seguro
+    sameSite: "none", // para aceitar cross-site cookies
     maxAge: 60 * 60 * 1000, // 1 hora
   });
 
