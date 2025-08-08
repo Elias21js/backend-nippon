@@ -19,10 +19,12 @@ export async function getRegistrosOfUser(id, ano, mes) {
     const { rows } = await database.query(
       `
     SELECT
-      (SELECT json_agg(r) FROM registros r 
-       WHERE r.user_id = $1 AND r.data >= $2 AND r.data < $3 ORDER BY r.data ASC) AS registros,
-      (SELECT json_agg(d) FROM discounts d 
-       WHERE d.user_id = $1 AND d.data >= $2 AND d.data < $3 ORDER BY d.data ASC) AS descontos
+      (SELECT json_agg(r ORDER BY r.data ASC)
+       FROM registros r
+       WHERE r.user_id = $1 AND r.data >= $2 AND r.data < $3) AS registros,
+      (SELECT json_agg(d ORDER BY d.data ASC)
+       FROM discounts d
+       WHERE d.user_id = $1 AND d.data >= $2 AND d.data < $3) AS descontos
     `,
       [id, inicio, proximoMes]
     );
