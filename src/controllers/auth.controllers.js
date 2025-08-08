@@ -59,8 +59,8 @@ export async function authLogOut(req, res) {
   try {
     res.clearCookie("token", {
       httpOnly: true, // protege contra XSS
-      secure: false,
-      sameSite: "strict", // reduz CSRF
+      secure: true, // porque no Render é HTTPS, tem que ser seguro
+      sameSite: "none", // para aceitar cross-site cookies
     });
     res.status(200).json({ message: "Logout feito com sucesso" });
   } catch (err) {
