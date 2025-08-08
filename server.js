@@ -11,7 +11,7 @@ const app = express();
 app.use(express.json());
 app.use(
   cors({
-    origin: "http://localhost:5173", // ou use uma variável de ambiente depois
+    origin: "https://nippon-gamma.vercel.app", // ou use uma variável de ambiente depois
     credentials: true,
   })
 );
