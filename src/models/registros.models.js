@@ -16,23 +16,18 @@ export async function getRegistrosOfUser(id, ano, mes) {
     const inicio = `${ano}-${String(mes).padStart(2, "0")}-01`;
     const proximoMes = mes == 12 ? `${Number(ano) + 1}-01-01` : `${ano}-${String(Number(mes) + 1).padStart(2, "0")}-01`;
 
-    const [registrosResult, descontosResult] = await Promise.all([
-      database.query("SELECT * FROM registros WHERE user_id = $1 AND data >= $2 AND data < $3 ORDER BY data ASC", [
-        id,
-        inicio,
-        proximoMes,
-      ]),
-      database.query("SELECT * FROM discounts WHERE user_id = $1 AND data >= $2 AND data < $3 ORDER BY data ASC", [
-        id,
-        inicio,
-        proximoMes,
-      ]),
-    ]);
+    const { rows } = await database.query(
+      `
+    SELECT
+      (SELECT json_agg(r) FROM registros r 
+       WHERE r.user_id = $1 AND r.data >= $2 AND r.data < $3 ORDER BY r.data ASC) AS registros,
+      (SELECT json_agg(d) FROM discounts d 
+       WHERE d.user_id = $1 AND d.data >= $2 AND d.data < $3 ORDER BY d.data ASC) AS descontos
+    `,
+      [id, inicio, proximoMes]
+    );
 
-    return {
-      registros: registrosResult.rows,
-      descontos: descontosResult.rows,
-    };
+    return rows[0];
   } catch (err) {
     throw err;
   }
