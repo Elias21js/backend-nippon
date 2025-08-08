@@ -8,6 +8,15 @@ export async function registerUser({ name, password }) {
   }
 }
 
+export async function userExists(name) {
+  try {
+    const { rows } = await database.query("SELECT EXISTS (SELECT 1 FROM users WHERE name = $1) AS exists", [name]);
+    return rows[0];
+  } catch (error) {
+    throw error;
+  }
+}
+
 export async function getUserPassword(name) {
   try {
     const { rows } = await database.query("SELECT password FROM users WHERE name = $1", [name]);
